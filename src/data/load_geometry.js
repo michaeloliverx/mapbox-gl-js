@@ -7,7 +7,9 @@ import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate.js'
 import getProjection from '../geo/projection/index.js';
 import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
+
 import type {CanonicalTileID} from '../source/tile_id.js';
+import type {ProjectionOptions} from '../geo/projection/index.js';
 
 // These bounds define the minimum and maximum supported coordinate values.
 // While visible coordinates are within [0, EXTENT], tiles may theoretically
@@ -19,7 +21,7 @@ const MIN = -MAX - 1;
 
 let projection;
 
-export function setProjection(config: {name: string} | string) {
+export function setProjection(config: ProjectionOptions) {
     projection = getProjection(config);
 }
 
