@@ -115,7 +115,7 @@ class Transform {
     _centerAltitude: number;
     _horizonShift: number;
 
-    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection: ProjectionOptions) {
+    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection: ProjectionOptions | string) {
         this.tileSize = 512; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
@@ -201,9 +201,11 @@ class Transform {
     getProjection() {
         const {center, parallels} = this.projection;
 
+        // if the user hasn't defined a center and parallels,
+        // use the default ones (if any).
         return {
             ...{center},
-            ...{parallels},
+            ...(parallels) && {parallels},
             ...this._projectionOptions
         };
     }
