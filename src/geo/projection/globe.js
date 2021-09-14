@@ -60,6 +60,34 @@ class GlobeTileTransform {
         return mat4.multiply([], this._globeMatrix, decode);
     }
 
+    createInversionMatrix(id: UnwrappedTileID): Float64Array {
+        const center = this._tr.center;
+        const localRadius = EXTENT / (2.0 * Math.PI);
+        const wsRadiusGlobe = this._worldSize / (2.0 * Math.PI);
+        const sGlobe = wsRadiusGlobe / localRadius;
+
+        const matrix = mat4.identity(new Float64Array(16));
+        mat4.scale(matrix, matrix, [sGlobe, sGlobe, 1.0]);
+        mat4.rotateX(matrix, matrix, degToRad(-center.lat));
+        mat4.rotateY(matrix, matrix, degToRad(-center.lng));
+
+        const decode = denormalizeECEF(tileBoundsOnGlobe(id.canonical));
+        mat4.multiply(matrix, matrix, decode);
+        mat4.invert(matrix, matrix);
+
+        const z = mercatorZfromAltitude(1, center.lat) * this._worldSize;
+        const projectionScaler = z / this._tr.pixelsPerMeter;
+
+        const ws = this._worldSize / projectionScaler;
+        const wsRadiusScaled = ws / (2.0 * Math.PI);
+        const sMercator = wsRadiusScaled / localRadius;
+
+        const scaling = mat4.identity(new Float64Array(16));
+        mat4.scale(scaling, scaling, [sMercator, sMercator, 1.0]);
+
+        return mat4.multiply(matrix, matrix, scaling);
+    }
+
     tileAabb(id: UnwrappedTileID, z: number, minZ: number, maxZ: number) {
         const aabb = tileBoundsOnGlobe(id.canonical);
 
@@ -184,9 +212,8 @@ export default {
 
     projectTilePoint(x: number, y: number, id: CanonicalTileID): {x:number, y: number, z:number} {
         const tiles = Math.pow(2.0, id.z);
-        //const mx = (p.x / 8192.0 + tiles / 2) / tiles;
-        const mx = (x / 8192.0 + id.x) / tiles;
-        const my = (y / 8192.0 + id.y) / tiles;
+        const mx = (x / EXTENT + id.x) / tiles;
+        const my = (y / EXTENT + id.y) / tiles;
         const lat = latFromMercatorY(my);
         const lng = lngFromMercatorX(mx);
         const pos = latLngToECEF(lat, lng);
@@ -204,7 +231,7 @@ export default {
     zAxisUnit: "pixels",
 
     pixelsPerMeter(lat: number, worldSize: number) {
-        return mercatorZfromAltitude(1, lat) * worldSize;
+        return mercatorZfromAltitude(1, 0) * worldSize;
     },
 
     createTileTransform(tr: Transform, worldSize: number): TileTransform {
@@ -314,8 +341,8 @@ export function normalizeECEF(bounds: Aabb): Float64Array {
     return m;
 }
 
-export const GLOBE_ZOOM_THRESHOLD_MIN = 7;
-export const GLOBE_ZOOM_THRESHOLD_MAX = 8;
+export const GLOBE_ZOOM_THRESHOLD_MIN = 5;
+export const GLOBE_ZOOM_THRESHOLD_MAX = 6;
 
 export function globeToMercatorTransition(zoom: number): number {
     return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
