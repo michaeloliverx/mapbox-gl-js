@@ -1,28 +1,4 @@
-#ifdef GL_ES
-precision highp float;
-#else
-
-#if !defined(lowp)
-#define lowp
-#endif
-
-#if !defined(mediump)
-#define mediump
-#endif
-
-#if !defined(highp)
-#define highp
-#endif
-
-#endif
-
-#ifndef EXTENT
-#define EXTENT 8192.0
-#endif
-
-#ifndef PI
-#define PI 3.141592653589793
-#endif
+// NOTE: This prelude is injected in the vertex shader only
 
 float wrap(float n, float min, float max) {
     float d = max - min;
@@ -30,9 +6,10 @@ float wrap(float n, float min, float max) {
     return (w == min) ? max : w;
 }
 
-vec3 mix_globe_mercator(mat4 matrix, vec2 tile_anchor, vec3 position, vec3 tile_id, vec2 mercator_center, float t) {
+vec3 mercator_tile_position(mat4 matrix, vec2 tile_anchor, vec3 tile_id, vec2 mercator_center) {
 #if defined(PROJECTION_GLOBE_VIEW) && !defined(PROJECTED_POS_ON_VIEWPORT)
-    float tiles = pow(2.0, tile_id.z);
+    // tile_id.z contains pow(2.0, coord.canonical.z)
+    float tiles = tile_id.z;
 
     vec2 mercator = (tile_anchor / EXTENT + tile_id.xy) / tiles;
     mercator -= mercator_center;
@@ -41,9 +18,17 @@ vec3 mix_globe_mercator(mat4 matrix, vec2 tile_anchor, vec3 position, vec3 tile_
     vec4 mercator_tile = vec4(mercator.xy * EXTENT, EXTENT / (2.0 * PI), 1.0);
     mercator_tile = matrix * mercator_tile;
 
-    return mix(position, mercator_tile.xyz, vec3(t));
+    return mercator_tile.xyz;
 #else
-    return position;
+    return vec3(0.0);
+#endif
+}
+
+vec3 mix_globe_mercator(vec3 globe, vec3 mercator, float t) {
+#if defined(PROJECTION_GLOBE_VIEW) && !defined(PROJECTED_POS_ON_VIEWPORT)
+    return mix(globe, mercator, t);
+#else
+    return globe;
 #endif
 }
 
