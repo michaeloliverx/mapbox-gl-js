@@ -3,10 +3,10 @@
 import LngLat from './lng_lat.js';
 import LngLatBounds from './lng_lat_bounds.js';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude, latFromMercatorY, MAX_MERCATOR_LATITUDE} from './mercator_coordinate.js';
-import getProjection from './projection/index.js';
+import {getProjection, getProjectionOptions} from './projection/index.js';
 import tileTransform from '../geo/projection/tile_transform.js';
 import Point from '@mapbox/point-geometry';
-import {wrap, clamp, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
+import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner} from '../util/util.js';
 import {number as interpolate} from '../style-spec/util/interpolate.js';
 import EXTENT from '../data/extent.js';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
@@ -18,7 +18,8 @@ import assert from 'assert';
 import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id.js';
 import type {Elevation} from '../terrain/elevation.js';
 import type {PaddingOptions} from './edge_insets.js';
-import type {Projection, ProjectionOptions} from './projection/index.js';
+import type {Projection} from './projection/index.js';
+import type {ProjectionSpecification} from '../style-spec/types.js';
 
 const NUM_WORLD_COPIES = 3;
 const DEFAULT_MIN_ZOOM = 0;
@@ -92,7 +93,7 @@ class Transform {
     cameraElevationReference: ElevationReference;
     fogCullDistSq: ?number;
     _averageElevation: number;
-    _projectionOptions: ProjectionOptions;
+    _projectionOptions: ProjectionSpecification;
     projection: Projection;
     _elevation: ?Elevation;
     _fov: number;
@@ -115,7 +116,7 @@ class Transform {
     _centerAltitude: number;
     _horizonShift: number;
 
-    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection: ProjectionOptions | string) {
+    constructor(minZoom: ?number, maxZoom: ?number, minPitch: ?number, maxPitch: ?number, renderWorldCopies: boolean | void, projection: ProjectionSpecification) {
         this.tileSize = 512; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
@@ -199,21 +200,15 @@ class Transform {
     }
 
     getProjection() {
-        const {center, parallels} = this.projection;
-
-        // if the user hasn't defined a center and parallels,
-        // use the default ones (if any).
-        return {
-            ...{center},
-            ...(parallels) && {parallels},
-            ...this._projectionOptions
-        };
+        return pick(this.projection, ['name', 'center', 'parallels']);
     }
 
-    setProjection(projection?: ProjectionOptions | string) {
-        if (typeof projection === 'string' || !projection) projection = {name: projection || 'mercator'};
+    setProjection(projection: ProjectionSpecification) {
+        projection = getProjectionOptions(projection);
+        console.log('projection: ', projection);
         this._projectionOptions = projection;
         this.projection = getProjection(projection);
+        console.log('this.projection: ', this.projection);
         this._calcMatrices();
     }
 
