@@ -118,7 +118,6 @@ export default class Worker {
     }
 
     setProjection(mapId: string, config: ProjectionSpecification) {
-        debugger;
         setProjection(config);
     }
 
