@@ -2,7 +2,6 @@
 
 import {createExpression} from '../expression/index.js';
 import {isFeatureConstant} from '../expression/is_constant.js';
-import latest from '../reference/latest.js';
 import type {GlobalProperties, Feature} from '../expression/index.js';
 import type {CanonicalTileID} from '../../source/tile_id.js';
 import type Point from '@mapbox/point-geometry';
@@ -56,6 +55,31 @@ function isExpressionFilter(filter: any) {
     }
 }
 
+const filterTypes = {
+    static: {
+        "type": "boolean",
+        "doc": "Expression which determines whether or not to display a polygon. Fill layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+        "default": false,
+        "transition": false,
+        "property-type": "data-driven",
+        "expression": {
+            "interpolated": false,
+            "parameters": ["zoom", "feature"]
+        }
+    },
+    dynamic: {
+        "type": "boolean",
+        "doc": "Expression which determines whether or not to display a symbol. Symbols support dynamic filtering, meaning this expression can use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+        "default": false,
+        "transition": false,
+        "property-type": "data-driven",
+        "expression": {
+            "interpolated": false,
+            "parameters": ["zoom", "feature", "pitch", "distance-from-center"]
+        }
+    }
+}
+
 /**
  * Given a filter expressed as nested arrays, return a new function
  * that evaluates whether a given feature (with a .properties or .tags property)
@@ -91,7 +115,7 @@ ${JSON.stringify(filterExp, null, 2)}
     }
 
     // Compile the static component of the filter
-    const filterSpec = latest[`filter_${layerType}`];
+    const filterSpec = layerType === 'symbol' ? filterTypes.dynamic : filterTypes.static;
     const compiledStaticFilter = createExpression(staticFilter, filterSpec);
 
     let filterFunc = null;
