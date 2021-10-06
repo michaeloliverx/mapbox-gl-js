@@ -2500,7 +2500,7 @@
     "value": "*",
     "doc": "A filter selects specific features from a layer."
   },
-  "filter_symbol": {
+  "filter_dynamic": {
     "type": "boolean",
     "doc": "Expression which determines whether or not to display a symbol. Symbols support dynamic filtering, meaning this expression can use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
     "default": false,
@@ -2511,53 +2511,9 @@
       "parameters": ["zoom", "feature", "pitch", "distance-from-center"]
     }
   },
-  "filter_fill": {
+  "filter_static": {
     "type": "boolean",
     "doc": "Expression which determines whether or not to display a polygon. Fill layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
-    "default": false,
-    "transition": false,
-    "property-type": "data-driven",
-    "expression": {
-      "interpolated": false,
-      "parameters": ["zoom", "feature"]
-    }
-  },
-  "filter_line": {
-    "type": "boolean",
-    "doc": "Expression which determines whether or not to display a Polygon or LineString. Line layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
-    "default": false,
-    "transition": false,
-    "property-type": "data-driven",
-    "expression": {
-      "interpolated": false,
-      "parameters": ["zoom", "feature"]
-    }
-  },
-  "filter_circle": {
-    "type": "boolean",
-    "doc": "Expression which determines whether or not to display a circle. Circle layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
-    "default": false,
-    "transition": false,
-    "property-type": "data-driven",
-    "expression": {
-      "interpolated": false,
-      "parameters": ["zoom", "feature"]
-    }
-  },
-  "filter_fill-extrusion": {
-    "type": "boolean",
-    "doc": "Expression which determines whether or not to display a Polygon. Fill-extrusion layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
-    "default": false,
-    "transition": false,
-    "property-type": "data-driven",
-    "expression": {
-      "interpolated": false,
-      "parameters": ["zoom", "feature"]
-    }
-  },
-  "filter_heatmap": {
-    "type": "boolean",
-    "doc": "Expression used to determine whether a point is being displayed or not. Heatmap layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
     "default": false,
     "transition": false,
     "property-type": "data-driven",

@@ -10,10 +10,12 @@ import {isExpressionFilter} from '../feature_filter/index.js';
 export default function validateFilter(options) {
     if (isExpressionFilter(deepUnbundle(options.value))) {
         const layerType = deepUnbundle(options.layerType);
+        const valueSpec = layerType === 'symbol' ? options.styleSpec['filter_dynamic'] : options.styleSpec['filter_static'];
+
         return validateExpression(extend({}, options, {
             expressionContext: 'filter',
             // We default to a layerType of `fill` because that points to a non-dynamic filter definition within the style-spec.
-            valueSpec: options.styleSpec[`filter_${layerType || 'fill'}`]
+            valueSpec
         }));
     } else {
         return validateNonExpressionFilter(options);
