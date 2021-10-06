@@ -78,7 +78,7 @@ const filterTypes = {
             "parameters": ["zoom", "feature", "pitch", "distance-from-center"]
         }
     }
-}
+};
 
 /**
  * Given a filter expressed as nested arrays, return a new function
